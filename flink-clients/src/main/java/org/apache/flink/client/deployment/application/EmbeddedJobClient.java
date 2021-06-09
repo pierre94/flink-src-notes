@@ -98,6 +98,7 @@ public class EmbeddedJobClient implements JobClient, CoordinationRequestGateway 
 
     @Override
     public CompletableFuture<String> triggerSavepoint(@Nullable final String savepointDirectory) {
+        // flink client触发savepoint的入口
         return dispatcherGateway.triggerSavepoint(jobId, savepointDirectory, false, timeout);
     }
 

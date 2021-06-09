@@ -846,6 +846,7 @@ public class Execution
      */
     public void triggerSynchronousSavepoint(
             long checkpointId, long timestamp, CheckpointOptions checkpointOptions) {
+        // triggerCheckpointHelper执行具体操作
         triggerCheckpointHelper(checkpointId, timestamp, checkpointOptions);
     }
 
@@ -863,7 +864,7 @@ public class Execution
 
         if (slot != null) {
             final TaskManagerGateway taskManagerGateway = slot.getTaskManagerGateway();
-
+            // 调用taskManager的Gateway
             taskManagerGateway.triggerCheckpoint(
                     attemptId, getVertex().getJobId(), checkpointId, timestamp, checkpointOptions);
         } else {

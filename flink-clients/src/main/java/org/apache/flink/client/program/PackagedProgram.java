@@ -219,6 +219,7 @@ public class PackagedProgram implements AutoCloseable {
     public void invokeInteractiveModeForExecution() throws ProgramInvocationException {
         FlinkSecurityManager.monitorUserSystemExitForCurrentThread();
         try {
+            /* 调用main方法 */
             callMainMethod(mainClass, args);
         } finally {
             FlinkSecurityManager.unmonitorUserSystemExitForCurrentThread();

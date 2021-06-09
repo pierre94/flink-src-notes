@@ -123,7 +123,7 @@ public abstract class RpcEndpoint implements RpcGateway, AutoCloseableAsync {
     protected RpcEndpoint(final RpcService rpcService, final String endpointId) {
         this.rpcService = checkNotNull(rpcService, "rpcService");
         this.endpointId = checkNotNull(endpointId, "endpointId");
-
+        // 所有的调用都运行在Endpoint的主线程，因此不会有多线程的并发问题
         this.rpcServer = rpcService.startServer(this);
 
         this.mainThreadExecutor = new MainThreadExecutor(rpcServer, this::validateRunsInMainThread);

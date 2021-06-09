@@ -220,7 +220,7 @@ public class CliFrontend {
      */
     protected void run(String[] args) throws Exception {
         LOG.info("Running 'run' command.");
-
+        /*获取run配置默认的配置项*/
         final Options commandOptions = CliFrontendParser.getRunCommandOptions();
         final CommandLine commandLine = getCommandLine(commandOptions, args, true);
 
@@ -230,19 +230,23 @@ public class CliFrontend {
             return;
         }
 
+        /* 判断是否active: Generic\Yarn\Default */
         final CustomCommandLine activeCommandLine =
                 validateAndGetActiveCommandLine(checkNotNull(commandLine));
 
         final ProgramOptions programOptions = ProgramOptions.create(commandLine);
 
+        /* 获取用户的jar包和依赖 */
         final List<URL> jobJars = getJobJarAndDependencies(programOptions);
 
+        /* 获取有效配置: HA-ID、Target(session\per-job)、TM\JM内存、每个tm的slots数 */
         final Configuration effectiveConfiguration =
                 getEffectiveConfiguration(activeCommandLine, commandLine, programOptions, jobJars);
 
         LOG.debug("Effective executor configuration: {}", effectiveConfiguration);
 
         try (PackagedProgram program = getPackagedProgram(programOptions, effectiveConfiguration)) {
+            /* 核心部分:执行程序 */
             executeProgram(effectiveConfiguration, program);
         }
     }
@@ -282,6 +286,7 @@ public class CliFrontend {
 
         final Configuration effectiveConfiguration = new Configuration(configuration);
 
+        /* toConfiguration很关键 */
         final Configuration commandLineConfiguration =
                 checkNotNull(activeCustomCommandLine).toConfiguration(commandLine);
 
@@ -1113,14 +1118,14 @@ public class CliFrontend {
     public static void main(final String[] args) {
         EnvironmentInformation.logEnvironmentInfo(LOG, "Command Line Client", args);
 
-        // 1. find the configuration directory
+        // 1. find the configuration directory config.sh里面的配置
         final String configurationDirectory = getConfigurationDirectoryFromEnv();
 
-        // 2. load the global configuration
+        // 2. load the global configuration 根据路径加载配置
         final Configuration configuration =
                 GlobalConfiguration.loadConfiguration(configurationDirectory);
 
-        // 3. load the custom command lines
+        // 3. load the custom command lines 封装命令行接口，按顺序是Generic、yarn、default
         final List<CustomCommandLine> customCommandLines =
                 loadCustomCommandLines(configuration, configurationDirectory);
 
@@ -1188,6 +1193,8 @@ public class CliFrontend {
     public static List<CustomCommandLine> loadCustomCommandLines(
             Configuration configuration, String configurationDirectory) {
         List<CustomCommandLine> customCommandLines = new ArrayList<>();
+
+        // 先Generic
         customCommandLines.add(new GenericCLI(configuration, configurationDirectory));
 
         //	Command line interface of the YARN session, with a special initialization here

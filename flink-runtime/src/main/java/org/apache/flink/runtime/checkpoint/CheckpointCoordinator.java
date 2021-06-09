@@ -473,6 +473,7 @@ public class CheckpointCoordinator {
         final CompletableFuture<CompletedCheckpoint> resultFuture = new CompletableFuture<>();
         timer.execute(
                 () ->
+                        // 底层逻辑还是checkpoint
                         triggerCheckpoint(checkpointProperties, targetLocation, false)
                                 .whenComplete(
                                         (completedCheckpoint, throwable) -> {
@@ -510,13 +511,14 @@ public class CheckpointCoordinator {
                     new IllegalArgumentException(
                             "Only synchronous savepoints are allowed to advance the watermark to MAX."));
         }
-
+        // 创建checkpoint的触发请求，并针对存在的进行执行
         CheckpointTriggerRequest request =
                 new CheckpointTriggerRequest(props, externalSavepointLocation, isPeriodic);
         chooseRequestToExecute(request).ifPresent(this::startTriggeringCheckpoint);
         return request.onCompletionPromise;
     }
 
+    // 执行checkpoint触发的细节，注意snapshotTaskState
     private void startTriggeringCheckpoint(CheckpointTriggerRequest request) {
         try {
             synchronized (lock) {
@@ -621,6 +623,7 @@ public class CheckpointCoordinator {
                                                 // no exception, no discarding, everything is OK
                                                 final long checkpointId =
                                                         checkpoint.getCheckpointId();
+                                                // snapshotTaskState 与taskmanager交互
                                                 snapshotTaskState(
                                                         timestamp,
                                                         checkpointId,
@@ -1730,6 +1733,7 @@ public class CheckpointCoordinator {
             }
             Preconditions.checkState(
                     isPeriodicCheckpointingConfigured(),
+                    // periodic 周期性的
                     "Can not start checkpoint scheduler, if no periodic checkpointing is configured");
 
             // make sure all prior timers are cancelled

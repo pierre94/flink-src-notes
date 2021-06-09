@@ -426,6 +426,7 @@ public class YarnClusterDescriptor implements ClusterDescriptor<ApplicationId> {
         }
     }
 
+    // application模式部署
     @Override
     public ClusterClientProvider<ApplicationId> deployApplicationCluster(
             final ClusterSpecification clusterSpecification,
@@ -455,6 +456,7 @@ public class YarnClusterDescriptor implements ClusterDescriptor<ApplicationId> {
         Preconditions.checkArgument(pipelineJars.size() == 1, "Should only have one jar");
 
         try {
+            // 返回一个am部署的结果
             return deployInternal(
                     clusterSpecification,
                     "Flink Application Cluster",
@@ -503,6 +505,7 @@ public class YarnClusterDescriptor implements ClusterDescriptor<ApplicationId> {
 
     /**
      * This method will block until the ApplicationMaster/JobManager have been deployed on YARN.
+     * 实际执行部署的方法
      *
      * @param clusterSpecification Initial cluster specification for the Flink cluster to be
      *     deployed
@@ -531,6 +534,7 @@ public class YarnClusterDescriptor implements ClusterDescriptor<ApplicationId> {
             }
         }
 
+        /* 部署准备是否就绪 */
         isReadyForDeployment(clusterSpecification);
 
         // ------------------ Check if the specified queue exists --------------------
@@ -588,7 +592,7 @@ public class YarnClusterDescriptor implements ClusterDescriptor<ApplicationId> {
 
         flinkConfiguration.setString(
                 ClusterEntrypoint.INTERNAL_CLUSTER_EXECUTION_MODE, executionMode.toString());
-
+        /* 启动AM  返回yarn返回的状态 */
         ApplicationReport report =
                 startAppMaster(
                         flinkConfiguration,
@@ -605,6 +609,7 @@ public class YarnClusterDescriptor implements ClusterDescriptor<ApplicationId> {
             logDetachedClusterInformation(yarnApplicationId, LOG);
         }
 
+        // 日志内容: Found Web Interface xxx . 打印application id。不太清楚为啥放到这个函数下
         setClusterEntrypointInfoToConfig(report);
 
         return () -> {
@@ -768,7 +773,7 @@ public class YarnClusterDescriptor implements ClusterDescriptor<ApplicationId> {
                 configuration, PluginUtils.createPluginManagerFromRootFolder(configuration));
 
         final FileSystem fs = FileSystem.get(yarnConfiguration);
-
+        // 硬编码处理GoogleHDFS
         // hard coded check for the GoogleHDFS client because its not overriding the getScheme()
         // method.
         if (!fs.getClass().getSimpleName().equals("GoogleHadoopFileSystem")
@@ -785,7 +790,7 @@ public class YarnClusterDescriptor implements ClusterDescriptor<ApplicationId> {
 
         final List<Path> providedLibDirs =
                 Utils.getQualifiedRemoteSharedPaths(configuration, yarnConfiguration);
-
+        // 上传jar文件
         final YarnApplicationFileUploader fileUploader =
                 YarnApplicationFileUploader.from(
                         fs,
@@ -1175,6 +1180,7 @@ public class YarnClusterDescriptor implements ClusterDescriptor<ApplicationId> {
                 new DeploymentFailureHook(yarnApplication, fileUploader.getApplicationDir());
         Runtime.getRuntime().addShutdownHook(deploymentFailureHook);
         LOG.info("Submitting application master " + appId);
+        //  yarn提交应用，前面主要是封装配置信息
         yarnClient.submitApplication(appContext);
 
         LOG.info("Waiting for the cluster to be allocated");
@@ -1183,6 +1189,7 @@ public class YarnClusterDescriptor implements ClusterDescriptor<ApplicationId> {
         YarnApplicationState lastAppState = YarnApplicationState.NEW;
         loop:
         while (true) {
+            // 死循环轮询
             try {
                 report = yarnClient.getApplicationReport(appId);
             } catch (IOException e) {

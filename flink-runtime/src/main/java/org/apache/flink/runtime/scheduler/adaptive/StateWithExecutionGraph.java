@@ -222,6 +222,7 @@ abstract class StateWithExecutionGraph implements State {
     }
 
     CompletableFuture<String> triggerSavepoint(String targetDirectory, boolean cancelJob) {
+        // savepoint底层复用了checkpoint的实现，重点关注 checkpointCoordinator.triggerSavepoint
         final CheckpointCoordinator checkpointCoordinator =
                 executionGraph.getCheckpointCoordinator();
         if (checkpointCoordinator == null) {

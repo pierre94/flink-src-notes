@@ -249,10 +249,13 @@ public class AkkaRpcService implements RpcService {
         implementedRpcGateways.add(RpcServer.class);
         implementedRpcGateways.add(AkkaBasedEndpoint.class);
 
+        // Invocation 请求 InvocationHandler 请求处理器
         final InvocationHandler akkaInvocationHandler;
 
         if (rpcEndpoint instanceof FencedRpcEndpoint) {
             // a FencedRpcEndpoint needs a FencedAkkaInvocationHandler
+            // FencedAkkaInvocationHandler The fencing is done by wrapping all messages in a
+            // * {@link FencedMessage}. 就是多一个fencing的token
             akkaInvocationHandler =
                     new FencedAkkaInvocationHandler<>(
                             akkaAddress,

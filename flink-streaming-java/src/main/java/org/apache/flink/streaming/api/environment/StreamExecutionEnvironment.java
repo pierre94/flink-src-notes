@@ -1830,7 +1830,7 @@ public class StreamExecutionEnvironment {
      */
     public JobExecutionResult execute(String jobName) throws Exception {
         Preconditions.checkNotNull(jobName, "Streaming Job name should not be null.");
-
+        /* 获取streamGraph */
         return execute(getStreamGraph(jobName));
     }
 
@@ -1845,6 +1845,7 @@ public class StreamExecutionEnvironment {
      */
     @Internal
     public JobExecutionResult execute(StreamGraph streamGraph) throws Exception {
+        // 异步调用
         final JobClient jobClient = executeAsync(streamGraph);
 
         try {
@@ -1943,6 +1944,7 @@ public class StreamExecutionEnvironment {
                 configuration.get(DeploymentOptions.TARGET),
                 "No execution.target specified in your configuration file.");
 
+        // Flink 大量使用了工厂设计模式
         final PipelineExecutorFactory executorFactory =
                 executorServiceLoader.getExecutorFactory(configuration);
 
@@ -1951,6 +1953,7 @@ public class StreamExecutionEnvironment {
                 "Cannot find compatible factory for specified execution.target (=%s)",
                 configuration.get(DeploymentOptions.TARGET));
 
+        // AbstractJobClusterExecutor 这里会把流图转换成作业图
         CompletableFuture<JobClient> jobClientFuture =
                 executorFactory
                         .getExecutor(configuration)

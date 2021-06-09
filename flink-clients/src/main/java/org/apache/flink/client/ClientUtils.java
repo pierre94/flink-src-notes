@@ -96,6 +96,7 @@ public enum ClientUtils {
                     "Starting program (detached: {})",
                     !configuration.getBoolean(DeploymentOptions.ATTACHED));
 
+            /* 用户代码里面的getExecutionEnvironment就是从这里拿到上下文的配置信息 */
             ContextEnvironment.setAsContext(
                     executorServiceLoader,
                     configuration,
@@ -111,6 +112,7 @@ public enum ClientUtils {
                     suppressSysout);
 
             try {
+                /* invoke 调用 */
                 program.invokeInteractiveModeForExecution();
             } finally {
                 ContextEnvironment.unsetAsContext();
