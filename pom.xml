@@ -1881,7 +1881,7 @@ under the License.
 						<includeTestSourceDirectory>true</includeTestSourceDirectory>
 						<configLocation>/tools/maven/checkstyle.xml</configLocation>
 						<logViolationsToConsole>true</logViolationsToConsole>
-						<failOnViolation>true</failOnViolation>
+						<failOnViolation>false</failOnViolation>
 					</configuration>
 				</plugin>
 

@@ -84,6 +84,7 @@ import org.apache.flink.runtime.rest.handler.legacy.ExecutionGraphCache;
 import org.apache.flink.runtime.rest.handler.legacy.files.StaticFileServerHandler;
 import org.apache.flink.runtime.rest.handler.legacy.files.WebContentHandlerSpecification;
 import org.apache.flink.runtime.rest.handler.legacy.metrics.MetricFetcher;
+import org.apache.flink.runtime.rest.handler.pierre.FooHandler;
 import org.apache.flink.runtime.rest.handler.taskmanager.TaskManagerCustomLogHandler;
 import org.apache.flink.runtime.rest.handler.taskmanager.TaskManagerDetailsHandler;
 import org.apache.flink.runtime.rest.handler.taskmanager.TaskManagerLogFileHandler;
@@ -124,6 +125,7 @@ import org.apache.flink.runtime.rest.messages.job.SubtaskCurrentAttemptDetailsHe
 import org.apache.flink.runtime.rest.messages.job.SubtaskExecutionAttemptAccumulatorsHeaders;
 import org.apache.flink.runtime.rest.messages.job.SubtaskExecutionAttemptDetailsHeaders;
 import org.apache.flink.runtime.rest.messages.job.coordination.ClientCoordinationHeaders;
+import org.apache.flink.runtime.rest.messages.pierre.FooHeaders;
 import org.apache.flink.runtime.rest.messages.taskmanager.TaskManagerCustomLogHeaders;
 import org.apache.flink.runtime.rest.messages.taskmanager.TaskManagerDetailsHeaders;
 import org.apache.flink.runtime.rest.messages.taskmanager.TaskManagerLogFileHeaders;
@@ -629,6 +631,9 @@ public class WebMonitorEndpoint<T extends RestfulGateway> extends RestServerEndp
                         timeout,
                         responseHeaders,
                         ClientCoordinationHeaders.getInstance());
+        // 自己的handler
+        final FooHandler fooHandler =
+                new FooHandler(leaderRetriever, timeout, responseHeaders, FooHeaders.getInstance());
 
         final ShutdownHandler shutdownHandler =
                 new ShutdownHandler(
@@ -795,6 +800,7 @@ public class WebMonitorEndpoint<T extends RestfulGateway> extends RestServerEndp
                 Tuple2.of(YarnStopJobTerminationHeaders.getInstance(), jobStopTerminationHandler));
 
         handlers.add(Tuple2.of(shutdownHandler.getMessageHeaders(), shutdownHandler));
+        handlers.add(Tuple2.of(fooHandler.getMessageHeaders(), fooHandler));
 
         optWebContent.ifPresent(
                 webContent -> {
